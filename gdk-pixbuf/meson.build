@@ -266,12 +266,24 @@ else
   built_girs = []
 endif
 
-gdkpixbuf_dep = declare_dependency(
-  link_with: gdkpixbuf,
-  include_directories: root_inc,
-  dependencies: gdk_pixbuf_deps,
-  sources: [ gdkpixbuf_enum_h, built_girs ],
-)
+# If the library is a static library we need to add the dependencies
+# of all the builtin loaders othwrwise we will get a linker error
+# with the thumbnailer (but may be not limited to).
+if get_option('default_library') == 'static'
+  gdkpixbuf_dep = declare_dependency(
+    link_with: gdkpixbuf,
+    include_directories: root_inc,
+    dependencies: [ gdk_pixbuf_deps, included_loaders_deps ],
+    sources: [ gdkpixbuf_enum_h, built_girs ],
+  )
+else
+  gdkpixbuf_dep = declare_dependency(
+    link_with: gdkpixbuf,
+    include_directories: root_inc,
+    dependencies: gdk_pixbuf_deps,
+    sources: [ gdkpixbuf_enum_h, built_girs ],
+  )
+endif
 
 # Now check if we are building loaders as installed shared modules
 # We do this here because shared modules depend on libgdk-pixbuf
